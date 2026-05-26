@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">GuiterApp_1</string>
+    <string name="delete_all_data">Delete All User Data</string>
+    <string name="return_to_profile">Return to Profile</string>
+    <string name="delete_data_confirmation_title">Delete All Data</string>
+    <string name="delete_data_confirmation_message">Are you sure you want to delete all user data? This action cannot be undone.</string>
+    <string name="delete_confirm">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="data_deleted_toast">All user data has been deleted.</string>
+</resources>

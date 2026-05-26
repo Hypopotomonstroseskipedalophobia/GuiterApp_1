@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@color/background_design">
+
+    <ImageButton
+        android:id="@+id/btn_back"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Back"
+        android:src="@android:drawable/ic_menu_revert"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Guitar Tuner"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/btn_back"
+        app:layout_constraintStart_toEndOf="@id/btn_back"
+        app:layout_constraintTop_toTopOf="@id/btn_back" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/keep_note_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="56dp"
+        android:checked="true"
+        android:text="Keep Note"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/seven_string_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="56dp"
+        android:layout_marginEnd="24dp"
+        android:text="7-String"
+        android:textColor="@color/white"
+        app:layout_constraintEnd_toStartOf="@+id/keep_note_switch"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/tuning_spinner"
+        android:layout_width="127dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_back" />
+
+    <LinearLayout
+        android:id="@+id/string_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp"
+        android:padding="8dp"
+        android:background="#22FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tuning_spinner">
+
+        <TextView android:id="@+id/string_1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="14sp" />
+        <TextView android:id="@+id/string_2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="14sp" />
+        <TextView android:id="@+id/string_3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="14sp" />
+        <TextView android:id="@+id/string_4" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="14sp" />
+        <TextView android:id="@+id/string_5" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="14sp" />
+        <TextView android:id="@+id/string_6" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="14sp" />
+        <TextView android:id="@+id/string_7" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/white" android:textSize="14sp" android:visibility="gone" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/note_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="--"
+        android:textColor="@color/white"
+        android:textSize="80sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/tuner_bar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btn_back"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/prev_note_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.5"
+        android:text=""
+        android:textColor="@color/white"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="@+id/note_text"
+        app:layout_constraintEnd_toStartOf="@+id/note_text"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/note_text"
+        tools:text="G#" />
+
+    <TextView
+        android:id="@+id/next_note_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.5"
+        android:text=""
+        android:textColor="@color/white"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="@+id/note_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/note_text"
+        app:layout_constraintTop_toTopOf="@+id/note_text"
+        tools:text="A#" />
+
+    <TextView
+        android:id="@+id/frequency_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0.0 Hz"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/note_text" />
+
+    <ProgressBar
+        android:id="@+id/tuner_bar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_marginTop="32dp"
+        android:max="100"
+        android:progress="50"
+        android:progressDrawable="@drawable/tuner_progress_drawable"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frequency_text" />
+
+    <View
+        android:id="@+id/center_line"
+        android:layout_width="2dp"
+        android:layout_height="30dp"
+        android:background="#FF0000"
+        app:layout_constraintBottom_toBottomOf="@+id/tuner_bar"
+        app:layout_constraintEnd_toEndOf="@+id/tuner_bar"
+        app:layout_constraintStart_toStartOf="@+id/tuner_bar"
+        app:layout_constraintTop_toTopOf="@+id/tuner_bar" />
+
+    <Button
+        android:id="@+id/start_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Start Tuner"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tuner_bar" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="dark_grey">#FF121212</color>
+
+    <!-- References to palette.xml -->
+    <color name="primary_design">@color/design_5</color> <!-- #BF6E50 -->
+    <color name="secondary_design">@color/design_2</color> <!-- #736A65 -->
+    <color name="accent_design">@color/design_3</color> <!-- #BFB2AA -->
+    <color name="background_design">@color/dark_grey</color>
+    <color name="surface_design">@color/dark_grey</color>
+
+    <!-- Aliases for theme usage -->
+    <color name="design_primary">@color/design_5</color>
+    <color name="design_secondary">@color/design_2</color>
+    <color name="design_dark">@color/design_1</color>
+    <color name="design_gray">@color/design_3</color>
+</resources>

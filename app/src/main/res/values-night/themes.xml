@@ -1,0 +1,17 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.GuiterApp_1" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Dark grey background and white text theme -->
+        <item name="colorPrimary">@color/primary_design</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/secondary_design</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSurface">@color/background_design</item>
+        <item name="colorOnSurface">@color/white</item>
+        <item name="android:windowBackground">@color/background_design</item>
+        <item name="android:textColorPrimary">@color/white</item>
+
+        <item name="colorPrimaryContainer">@color/secondary_design</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
+    </style>
+</resources>

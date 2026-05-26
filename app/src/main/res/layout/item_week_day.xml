@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/tv_day_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Mon"
+        android:textColor="#BBBBBB"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/tv_day_number"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="4dp"
+        android:background="@android:color/transparent"
+        android:gravity="center"
+        android:text="24"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:id="@+id/indicator_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/indicator_practice"
+            android:layout_width="4dp"
+            android:layout_height="4dp"
+            android:layout_margin="1dp"
+            android:background="#FFFFFF"
+            android:visibility="gone" />
+
+        <View
+            android:id="@+id/indicator_audio"
+            android:layout_width="4dp"
+            android:layout_height="4dp"
+            android:layout_margin="1dp"
+            android:background="#2196F3"
+            android:visibility="gone" />
+
+        <View
+            android:id="@+id/indicator_video"
+            android:layout_width="4dp"
+            android:layout_height="4dp"
+            android:layout_margin="1dp"
+            android:background="#F44336"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</LinearLayout>
