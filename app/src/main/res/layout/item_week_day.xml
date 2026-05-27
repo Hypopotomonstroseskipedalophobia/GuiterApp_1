@@ -57,6 +57,14 @@
             android:background="#F44336"
             android:visibility="gone" />
 
+        <View
+            android:id="@+id/indicator_exercise"
+            android:layout_width="4dp"
+            android:layout_height="4dp"
+            android:layout_margin="1dp"
+            android:background="#FFD700"
+            android:visibility="gone" />
+
     </LinearLayout>
 
 </LinearLayout>

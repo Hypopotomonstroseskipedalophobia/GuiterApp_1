@@ -3,6 +3,7 @@ package com.example.guiterapp_1;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
@@ -35,6 +38,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.ValueFormatter;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.text.SimpleDateFormat;
@@ -54,6 +58,7 @@ public class ProfileFragment extends Fragment {
     private ExerciseStatsAdapter exerciseAdapter;
     private List<Instrument> instruments = new ArrayList<>();
     private Integer dialogSelectedInstrumentId = null;
+    private Integer selectedInstrumentId = null;
 
     @Nullable
     @Override
@@ -97,6 +102,23 @@ public class ProfileFragment extends Fragment {
         binding.cgStatsFilter.setOnCheckedChangeListener((group, checkedId) -> {
             loadStats();
         });
+
+        binding.cgInstrumentFilter.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.chip_instr_all) {
+                selectedInstrumentId = null;
+            } else if (checkedId == R.id.chip_add_instrument) {
+                // Ignore selection change for the Add chip as it's an action chip
+                return;
+            } else {
+                View checkedChip = group.findViewById(checkedId);
+                if (checkedChip != null && checkedChip.getTag() instanceof Integer) {
+                    selectedInstrumentId = (Integer) checkedChip.getTag();
+                }
+            }
+            loadStats();
+        });
+
+        binding.chipAddInstrument.setOnClickListener(v -> showAddInstrumentDialog());
 
         loadStats();
         loadInstruments();
@@ -201,12 +223,83 @@ public class ProfileFragment extends Fragment {
         Executors.newSingleThreadExecutor().execute(() -> {
             AppDatabase db = AppDatabase.getInstance(appContext);
             instruments = db.instrumentDao().getAllInstruments();
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(this::setupInstrumentFilterChips);
+            }
+        });
+    }
+
+    private void setupInstrumentFilterChips() {
+        if (binding == null || getContext() == null) return;
+        
+        // Remove all except "All" and "Add" chips
+        int childCount = binding.cgInstrumentFilter.getChildCount();
+        for (int i = childCount - 1; i >= 0; i--) {
+            View view = binding.cgInstrumentFilter.getChildAt(i);
+            if (view.getId() != R.id.chip_instr_all && view.getId() != R.id.chip_add_instrument) {
+                binding.cgInstrumentFilter.removeView(view);
+            }
+        }
+
+        // Insert new chips before the "Add" chip
+        int insertIndex = binding.cgInstrumentFilter.indexOfChild(binding.chipAddInstrument);
+        if (insertIndex == -1) insertIndex = binding.cgInstrumentFilter.getChildCount();
+
+        for (Instrument instrument : instruments) {
+            Chip chip = new Chip(getContext());
+            chip.setText(instrument.name);
+            chip.setCheckable(true);
+            chip.setTag(instrument.instrumentId);
+            chip.setTextColor(Color.WHITE);
+            chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor("#1E1E1E")));
+            
+            binding.cgInstrumentFilter.addView(chip, insertIndex++);
+        }
+    }
+
+    private void showAddInstrumentDialog() {
+        Context context = getContext();
+        if (context == null) return;
+
+        EditText input = new EditText(context);
+        input.setHint("Instrument Name");
+        int padding = (int) (16 * getResources().getDisplayMetrics().density);
+        
+        FrameLayout container = new FrameLayout(context);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.leftMargin = padding;
+        params.rightMargin = padding;
+        input.setLayoutParams(params);
+        container.addView(input);
+
+        new MaterialAlertDialogBuilder(context)
+                .setTitle("Add New Instrument")
+                .setView(container)
+                .setPositiveButton("Add", (dialog, which) -> {
+                    String name = input.getText().toString().trim();
+                    if (!name.isEmpty()) {
+                        saveNewInstrument(name);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void saveNewInstrument(String name) {
+        Context context = getContext();
+        if (context == null) return;
+        Context appContext = context.getApplicationContext();
+        Executors.newSingleThreadExecutor().execute(() -> {
+            AppDatabase db = AppDatabase.getInstance(appContext);
+            db.instrumentDao().insert(new Instrument(name));
+            loadInstruments();
         });
     }
 
     private void loadStats() {
         if (binding == null) return;
-        final int checkedId = binding.cgStatsFilter.getCheckedChipId();
+        final int checkedDateId = binding.cgStatsFilter.getCheckedChipId();
+        final Integer instrumentId = selectedInstrumentId;
 
         Context context = getContext();
         if (context == null) return;
@@ -215,12 +308,20 @@ public class ProfileFragment extends Fragment {
         Executors.newSingleThreadExecutor().execute(() -> {
             AppDatabase db = AppDatabase.getInstance(appContext);
             
-            List<Lesson> filteredLessons;
-            if (checkedId == R.id.chip_all) {
-                filteredLessons = db.lessonDao().getAllLessons();
+            List<Lesson> lessons;
+            if (checkedDateId == R.id.chip_all) {
+                lessons = db.lessonDao().getAllLessons();
             } else {
-                String startDate = getStartDateForFilter(checkedId);
-                filteredLessons = db.lessonDao().getLessonsAfterDate(startDate);
+                String startDate = getStartDateForFilter(checkedDateId);
+                lessons = db.lessonDao().getLessonsAfterDate(startDate);
+            }
+            
+            // Filter lessons by instrument
+            List<Lesson> filteredLessons = new ArrayList<>();
+            for (Lesson l : lessons) {
+                if (instrumentId == null || (l.instrumentId != null && l.instrumentId.equals(instrumentId))) {
+                    filteredLessons.add(l);
+                }
             }
             
             processLessonsForStats(filteredLessons);
@@ -228,13 +329,21 @@ public class ProfileFragment extends Fragment {
             List<Exercise> allExercises = db.exerciseDao().getAllExercises();
             List<LessonWithExercise> allHistory = db.lessonDao().getAllLessonsWithExercise();
             
+            // Filter exercises by instrument
+            List<Exercise> filteredExercises = new ArrayList<>();
+            for (Exercise ex : allExercises) {
+                if (instrumentId == null || ex.instrument_id == instrumentId) {
+                    filteredExercises.add(ex);
+                }
+            }
+            
             List<Instrument> allInstruments = db.instrumentDao().getAllInstruments();
             Map<Integer, String> instrumentMap = new HashMap<>();
             for (Instrument i : allInstruments) {
                 instrumentMap.put(i.instrumentId, i.name);
             }
             
-            processExerciseStats(allExercises, allHistory, instrumentMap);
+            processExerciseStats(filteredExercises, allHistory, instrumentMap);
         });
     }
 

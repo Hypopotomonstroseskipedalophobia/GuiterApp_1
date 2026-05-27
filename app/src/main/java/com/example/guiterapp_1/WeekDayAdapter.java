@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.guiterapp_1.databinding.ItemWeekDayBinding;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -23,6 +22,7 @@ public class WeekDayAdapter extends RecyclerView.Adapter<WeekDayAdapter.ViewHold
         public boolean hasPractice;
         public boolean hasAudio;
         public boolean hasVideo;
+        public boolean hasExercise;
         public boolean isSelected;
 
         public DayModel(Date date) {
@@ -59,7 +59,7 @@ public class WeekDayAdapter extends RecyclerView.Adapter<WeekDayAdapter.ViewHold
         holder.binding.tvDayNumber.setText(numberFormat.format(day.date));
 
         if (day.isSelected) {
-            holder.binding.tvDayNumber.setBackgroundResource(android.R.drawable.editbox_dropdown_light_frame); // Simple circle placeholder
+            holder.binding.tvDayNumber.setBackgroundResource(android.R.drawable.editbox_dropdown_light_frame);
             holder.binding.tvDayNumber.setTextColor(Color.BLACK);
         } else {
             holder.binding.tvDayNumber.setBackgroundColor(Color.TRANSPARENT);
@@ -69,6 +69,7 @@ public class WeekDayAdapter extends RecyclerView.Adapter<WeekDayAdapter.ViewHold
         holder.binding.indicatorPractice.setVisibility(day.hasPractice ? View.VISIBLE : View.GONE);
         holder.binding.indicatorAudio.setVisibility(day.hasAudio ? View.VISIBLE : View.GONE);
         holder.binding.indicatorVideo.setVisibility(day.hasVideo ? View.VISIBLE : View.GONE);
+        holder.binding.indicatorExercise.setVisibility(day.hasExercise ? View.VISIBLE : View.GONE);
 
         holder.itemView.setOnClickListener(v -> listener.onDayClick(day));
     }

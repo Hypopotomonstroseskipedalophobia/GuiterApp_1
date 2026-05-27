@@ -7,9 +7,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.net.Uri;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.MediaStore;
@@ -33,6 +36,7 @@ import com.example.guiterapp_1.data.Lesson;
 import com.example.guiterapp_1.data.LessonWithExercise;
 import com.example.guiterapp_1.databinding.DialogEditLessonBinding;
 import com.example.guiterapp_1.databinding.FragmentProgressBinding;
+import com.google.android.material.chip.Chip;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -55,6 +59,7 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
     private boolean isBound = false;
     private boolean isMinimized = false;
     private List<Instrument> instruments;
+    private Integer selectedInstrumentId = null;
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
@@ -192,6 +197,19 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
             videoPickerLauncher.launch(chooserIntent);
         });
 
+        binding.cgInstrumentFilter.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.chip_instr_all) {
+                selectedInstrumentId = null;
+            } else {
+                View checkedChip = group.findViewById(checkedId);
+                if (checkedChip != null && checkedChip.getTag() instanceof Integer) {
+                    selectedInstrumentId = (Integer) checkedChip.getTag();
+                }
+            }
+            updateDetails(selectedDate);
+            if (isMinimized) loadWeekData();
+        });
+
         setupInlineRecordingControls();
         loadInstruments();
         updateDetails(selectedDate);
@@ -204,7 +222,33 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
         Executors.newSingleThreadExecutor().execute(() -> {
             AppDatabase db = AppDatabase.getInstance(appContext);
             instruments = db.instrumentDao().getAllInstruments();
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(this::setupInstrumentFilterChips);
+            }
         });
+    }
+
+    private void setupInstrumentFilterChips() {
+        if (binding == null || getContext() == null || instruments == null) return;
+
+        // Clear dynamically added chips
+        int childCount = binding.cgInstrumentFilter.getChildCount();
+        for (int i = childCount - 1; i >= 0; i--) {
+            View view = binding.cgInstrumentFilter.getChildAt(i);
+            if (view.getId() != R.id.chip_instr_all) {
+                binding.cgInstrumentFilter.removeView(view);
+            }
+        }
+
+        for (Instrument instrument : instruments) {
+            Chip chip = new Chip(getContext());
+            chip.setText(instrument.name);
+            chip.setCheckable(true);
+            chip.setTag(instrument.instrumentId);
+            chip.setTextColor(Color.WHITE);
+            chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor("#1E1E1E")));
+            binding.cgInstrumentFilter.addView(chip);
+        }
     }
 
     private void showEditLessonDialog(Lesson lesson) {
@@ -347,6 +391,9 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
                 0,
                 "Manual Entry"
         );
+        // Default to selected instrument if any
+        newLesson.instrumentId = selectedInstrumentId;
+
         Context context = getContext();
         if (context == null) return;
         Context appContext = context.getApplicationContext();
@@ -385,6 +432,7 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
         Context context = getContext();
         if (context == null) return;
         Context appContext = context.getApplicationContext();
+        final Integer instrumentId = selectedInstrumentId;
 
         Executors.newSingleThreadExecutor().execute(() -> {
             List<WeekDayAdapter.DayModel> weekDays = new ArrayList<>();
@@ -396,12 +444,15 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
                 String dateStr = sdf.format(date);
                 WeekDayAdapter.DayModel model = new WeekDayAdapter.DayModel(date);
 
-                List<Lesson> lessons = AppDatabase.getInstance(appContext).lessonDao().getLessonsByDate(dateStr);
+                List<LessonWithExercise> lessons = AppDatabase.getInstance(appContext).lessonDao().getLessonsWithExerciseByDate(dateStr);
                 if (lessons != null && !lessons.isEmpty()) {
-                    model.hasPractice = true;
-                    for (Lesson l : lessons) {
-                        if (l.audioPath != null && !l.audioPath.isEmpty()) model.hasAudio = true;
-                        if (l.videoPath != null && !l.videoPath.isEmpty()) model.hasVideo = true;
+                    for (LessonWithExercise lwe : lessons) {
+                        Lesson l = lwe.lesson;
+                        if (instrumentId == null || (l.instrumentId != null && l.instrumentId.equals(instrumentId))) {
+                            model.hasPractice = true;
+                            if (l.audioPath != null && !l.audioPath.isEmpty()) model.hasAudio = true;
+                            if (l.videoPath != null && !l.videoPath.isEmpty()) model.hasVideo = true;
+                        }
                     }
                 }
 
@@ -481,14 +532,26 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
         Context context = getContext();
         if (context == null) return;
         Context appContext = context.getApplicationContext();
+        final Integer instrumentId = selectedInstrumentId;
 
         Executors.newSingleThreadExecutor().execute(() -> {
             List<LessonWithExercise> lessons = AppDatabase.getInstance(appContext).lessonDao().getLessonsWithExerciseByDate(date);
+            
+            // Filter by instrument
+            List<LessonWithExercise> filteredLessons = new ArrayList<>();
+            if (lessons != null) {
+                for (LessonWithExercise lwe : lessons) {
+                    if (instrumentId == null || (lwe.lesson.instrumentId != null && lwe.lesson.instrumentId.equals(instrumentId))) {
+                        filteredLessons.add(lwe);
+                    }
+                }
+            }
+
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
                     if (binding == null) return;
                     
-                    boolean hasLessons = lessons != null && !lessons.isEmpty();
+                    boolean hasLessons = !filteredLessons.isEmpty();
 
                     binding.recordVideoButton.setEnabled(hasLessons);
                     binding.recordAudioButton.setEnabled(hasLessons);
@@ -500,10 +563,10 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
                     binding.uploadVideoButton.setAlpha(alpha);
 
                     if (hasLessons) {
-                        adapter.setLessons(lessons);
+                        adapter.setLessons(filteredLessons);
 
                         boolean found = false;
-                        for (LessonWithExercise lwe : lessons) {
+                        for (LessonWithExercise lwe : filteredLessons) {
                             Lesson l = lwe.lesson;
                             if (l.id == selectedLessonId) {
                                 selectedLesson = l;
@@ -512,7 +575,7 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
                             }
                         }
                         if (!found) {
-                            selectedLesson = lessons.get(lessons.size() - 1).lesson;
+                            selectedLesson = filteredLessons.get(filteredLessons.size() - 1).lesson;
                             selectedLessonId = selectedLesson.id;
                         }
 
@@ -526,6 +589,9 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
                         adapter.setSelectedLessonId(-1);
                         binding.lessonsRecyclerView.setVisibility(View.GONE);
                         binding.noLessonsText.setVisibility(View.VISIBLE);
+                        binding.noLessonsText.setText(instrumentId == null ? 
+                                "No lessons for this day." : 
+                                "No lessons for this instrument on this day.");
                     }
                 });
             }
@@ -557,6 +623,7 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
                         0,
                         "Practice Session"
                 );
+                newLesson.instrumentId = selectedInstrumentId;
                 long newId = AppDatabase.getInstance(appContext).lessonDao().insert(newLesson);
                 targetLesson = AppDatabase.getInstance(appContext).lessonDao().getLessonById((int)newId);
             }

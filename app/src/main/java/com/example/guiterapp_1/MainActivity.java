@@ -56,31 +56,40 @@ public class MainActivity extends AppCompatActivity {
 
         setupAudioPlayer();
 
-        if (savedInstanceState == null) {
-            libraryFragment = new LibraryFragment();
-            learningFragment = new LearningFragment();
-            profileFragment = new ProfileFragment();
-
-            activeFragment = learningFragment;
-
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, libraryFragment, "LIBRARY").hide(libraryFragment).commit();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, profileFragment, "PROFILE").hide(profileFragment).commit();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, learningFragment, "LEARNING").commit();
-
-            binding.bottomNavigation.setSelectedItemId(R.id.page_2);
+        if (!isSetupComplete()) {
+            showInstrumentSelection();
         } else {
-            libraryFragment = getSupportFragmentManager().findFragmentByTag("LIBRARY");
-            learningFragment = getSupportFragmentManager().findFragmentByTag("LEARNING");
-            profileFragment = getSupportFragmentManager().findFragmentByTag("PROFILE");
-
-            if (learningFragment != null && !learningFragment.isHidden()) activeFragment = learningFragment;
-            else if (libraryFragment != null && !libraryFragment.isHidden()) activeFragment = libraryFragment;
-            else activeFragment = profileFragment;
+            showMainContent();
         }
+    }
 
+    private boolean isSetupComplete() {
+        SharedPreferences pref = getSharedPreferences("GuitarApp", MODE_PRIVATE);
+        return pref.getBoolean("setup_complete", false);
+    }
+
+    private void showInstrumentSelection() {
+        binding.bottomNavigation.setVisibility(View.GONE);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, new InstrumentSelectionFragment())
+                .commit();
+    }
+
+    public void showMainContent() {
+        libraryFragment = new LibraryFragment();
+        learningFragment = new LearningFragment();
+        profileFragment = new ProfileFragment();
+
+        activeFragment = learningFragment;
+
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, libraryFragment, "LIBRARY").hide(libraryFragment).commit();
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, profileFragment, "PROFILE").hide(profileFragment).commit();
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.fragment_container, learningFragment, "LEARNING").commit();
+
+        binding.bottomNavigation.setSelectedItemId(R.id.page_2);
         setupNavigation();
         updateUIForFragment();
     }
@@ -232,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStack();
-        } else if (activeFragment != learningFragment) {
+        } else if (activeFragment != learningFragment && activeFragment != null) {
             binding.bottomNavigation.setSelectedItemId(R.id.page_2);
         } else {
             super.onBackPressed();

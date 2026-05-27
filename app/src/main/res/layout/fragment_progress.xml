@@ -14,16 +14,48 @@
         android:orientation="vertical"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageButton
-            android:id="@+id/closeCalendarButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="8dp"
-            android:visibility="gone"
-            app:srcCompat="@android:drawable/ic_menu_revert"
-            app:tint="#FFFFFF" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <HorizontalScrollView
+                android:id="@+id/hsv_instrument_filter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/closeCalendarButton"
+                android:scrollbars="none">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/cg_instrument_filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_instr_all"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="All"
+                        android:textColor="#FFFFFF"
+                        app:chipBackgroundColor="#1E1E1E" />
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+
+            <ImageButton
+                android:id="@+id/closeCalendarButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="8dp"
+                android:visibility="gone"
+                app:srcCompat="@android:drawable/ic_menu_revert"
+                app:tint="#FFFFFF" />
+        </RelativeLayout>
 
         <CalendarView
             android:id="@+id/calendar_view"
