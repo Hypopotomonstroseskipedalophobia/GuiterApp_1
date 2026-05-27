@@ -27,6 +27,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -60,6 +61,8 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
     private boolean isMinimized = false;
     private List<Instrument> instruments;
     private Integer selectedInstrumentId = null;
+    
+    private Uri currentVideoUri;
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
@@ -110,9 +113,10 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
     private final ActivityResultLauncher<Intent> videoCaptureLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Uri videoUri = result.getData().getData();
-                    saveMediaToLesson(videoUri.toString(), true);
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    if (currentVideoUri != null) {
+                        saveMediaToLesson(currentVideoUri.toString(), true);
+                    }
                 }
             }
     );
@@ -182,7 +186,13 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
         binding.addLessonButton.setOnClickListener(v -> addNewLesson());
 
         binding.recordVideoButton.setOnClickListener(v -> {
+            File videoFile = new File(MediaUtils.getVideoDir(requireContext()), "video_" + System.currentTimeMillis() + ".mp4");
+            currentVideoUri = FileProvider.getUriForFile(requireContext(),
+                    requireContext().getPackageName() + ".fileprovider", videoFile);
+
             Intent captureIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+            captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, currentVideoUri);
+            captureIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             videoCaptureLauncher.launch(captureIntent);
         });
 
@@ -197,22 +207,17 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
             videoPickerLauncher.launch(chooserIntent);
         });
 
-        binding.cgInstrumentFilter.setOnCheckedChangeListener((group, checkedId) -> {
-            if (checkedId == R.id.chip_instr_all) {
-                selectedInstrumentId = null;
-            } else {
-                View checkedChip = group.findViewById(checkedId);
-                if (checkedChip != null && checkedChip.getTag() instanceof Integer) {
-                    selectedInstrumentId = (Integer) checkedChip.getTag();
-                }
-            }
-            updateDetails(selectedDate);
-            if (isMinimized) loadWeekData();
-        });
-
         setupInlineRecordingControls();
         loadInstruments();
         updateDetails(selectedDate);
+    }
+
+    public void setSelectedInstrumentId(Integer instrumentId) {
+        this.selectedInstrumentId = instrumentId;
+        if (binding != null) {
+            updateDetails(selectedDate);
+            if (isMinimized) loadWeekData();
+        }
     }
 
     private void loadInstruments() {
@@ -222,33 +227,7 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
         Executors.newSingleThreadExecutor().execute(() -> {
             AppDatabase db = AppDatabase.getInstance(appContext);
             instruments = db.instrumentDao().getAllInstruments();
-            if (getActivity() != null) {
-                getActivity().runOnUiThread(this::setupInstrumentFilterChips);
-            }
         });
-    }
-
-    private void setupInstrumentFilterChips() {
-        if (binding == null || getContext() == null || instruments == null) return;
-
-        // Clear dynamically added chips
-        int childCount = binding.cgInstrumentFilter.getChildCount();
-        for (int i = childCount - 1; i >= 0; i--) {
-            View view = binding.cgInstrumentFilter.getChildAt(i);
-            if (view.getId() != R.id.chip_instr_all) {
-                binding.cgInstrumentFilter.removeView(view);
-            }
-        }
-
-        for (Instrument instrument : instruments) {
-            Chip chip = new Chip(getContext());
-            chip.setText(instrument.name);
-            chip.setCheckable(true);
-            chip.setTag(instrument.instrumentId);
-            chip.setTextColor(Color.WHITE);
-            chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor("#1E1E1E")));
-            binding.cgInstrumentFilter.addView(chip);
-        }
     }
 
     private void showEditLessonDialog(Lesson lesson) {
@@ -518,11 +497,8 @@ public class ProgressFragment extends Fragment implements LearningService.Servic
     }
 
     private void startRecording() {
-        File directory = requireContext().getExternalFilesDir(null);
-        if (directory != null) {
-            String path = directory.getAbsolutePath() + "/audio_progress_" + System.currentTimeMillis() + ".mp4";
-            learningService.startRecording(path);
-        }
+        String path = MediaUtils.getNewAudioPath(requireContext(), "audio_progress");
+        learningService.startRecording(path);
     }
 
     private void updateDetails(String date) {

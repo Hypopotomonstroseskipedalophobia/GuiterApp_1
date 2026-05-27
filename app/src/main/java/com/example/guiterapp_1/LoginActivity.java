@@ -24,6 +24,13 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Check if user is already logged in
+        if (isLoggedIn()) {
+            navigateToMain();
+            return;
+        }
+
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -36,6 +43,11 @@ public class LoginActivity extends AppCompatActivity {
             binding.switchModeText.setText(isLoginMode ? 
                 "Don't have an account? Register" : "Already have an account? Login");
         });
+    }
+
+    private boolean isLoggedIn() {
+        SharedPreferences pref = getSharedPreferences("GuitarApp", MODE_PRIVATE);
+        return pref.getInt("current_user_id", -1) != -1;
     }
 
     private void handleAuth() {

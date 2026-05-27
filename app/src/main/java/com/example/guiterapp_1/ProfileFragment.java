@@ -71,7 +71,7 @@ public class ProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        loadUserProfile();
+        //loadUserProfile();
 
         binding.btnProfileMenu.setOnClickListener(this::showPopupMenu);
 
@@ -116,6 +116,7 @@ public class ProfileFragment extends Fragment {
                 }
             }
             loadStats();
+            updateChildProgressFilter();
         });
 
         binding.chipAddInstrument.setOnClickListener(v -> showAddInstrumentDialog());
@@ -129,32 +130,39 @@ public class ProfileFragment extends Fragment {
         progressFragment.setArguments(args);
 
         getChildFragmentManager().beginTransaction()
-                .replace(R.id.progress_container, progressFragment)
+                .replace(R.id.progress_container, progressFragment, "PROGRESS_FRAGMENT")
                 .commit();
     }
 
-    private void loadUserProfile() {
-        Context context = getContext();
-        if (context == null) return;
-        SharedPreferences pref = context.getSharedPreferences("GuitarApp", Context.MODE_PRIVATE);
-        int userId = pref.getInt("current_user_id", -1);
-
-        if (userId != -1) {
-            Context appContext = context.getApplicationContext();
-            Executors.newSingleThreadExecutor().execute(() -> {
-                AppDatabase db = AppDatabase.getInstance(appContext);
-                User user = db.userDao().getUserById(userId);
-                if (user != null && getActivity() != null) {
-                    getActivity().runOnUiThread(() -> {
-                        if (binding != null) {
-                            binding.tvUsername.setText(user.username);
-                            binding.tvUserEmail.setText(user.email);
-                        }
-                    });
-                }
-            });
+    private void updateChildProgressFilter() {
+        Fragment fragment = getChildFragmentManager().findFragmentByTag("PROGRESS_FRAGMENT");
+        if (fragment instanceof ProgressFragment) {
+            ((ProgressFragment) fragment).setSelectedInstrumentId(selectedInstrumentId);
         }
     }
+
+//    private void loadUserProfile() {
+//        Context context = getContext();
+//        if (context == null) return;
+//        SharedPreferences pref = context.getSharedPreferences("GuitarApp", Context.MODE_PRIVATE);
+//        int userId = pref.getInt("current_user_id", -1);
+//
+//        if (userId != -1) {
+//            Context appContext = context.getApplicationContext();
+//            Executors.newSingleThreadExecutor().execute(() -> {
+//                AppDatabase db = AppDatabase.getInstance(appContext);
+//                User user = db.userDao().getUserById(userId);
+//                if (user != null && getActivity() != null) {
+//                    getActivity().runOnUiThread(() -> {
+//                        if (binding != null) {
+//                            binding.tvUsername.setText(user.username);
+//                            binding.tvUserEmail.setText(user.email);
+//                        }
+//                    });
+//                }
+//            });
+//        }
+//    }
 
     private void showPopupMenu(View view) {
         Context context = getContext();

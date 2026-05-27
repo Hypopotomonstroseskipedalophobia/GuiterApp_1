@@ -3,6 +3,7 @@ package com.example.guiterapp_1;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.example.guiterapp_1.data.AppDatabase;
@@ -69,16 +71,32 @@ public class SettingsFragment extends Fragment {
     }
 
     private void openMediaDirectory() {
-        File mediaDir = requireContext().getExternalFilesDir(null);
+        File mediaDir = MediaUtils.getMediaBaseDir(requireContext());
         if (mediaDir != null) {
-            Toast.makeText(getContext(), "Media folder: " + mediaDir.getAbsolutePath(), Toast.LENGTH_LONG).show();
-            
+            // Show the path to the user first
+            Toast.makeText(getContext(), "Opening: " + mediaDir.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+
+            // Try to open with FileProvider and a directory MIME type
+            Uri uri = FileProvider.getUriForFile(requireContext(),
+                    requireContext().getPackageName() + ".fileprovider", mediaDir);
+
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(uri, "vnd.android.document/directory");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
             try {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                Uri uri = Uri.fromFile(mediaDir);
-                intent.setDataAndType(uri, "*/*");
-                startActivity(Intent.createChooser(intent, "Open media folder"));
+                startActivity(intent);
             } catch (Exception e) {
+                // Fallback: try a more generic approach or a file picker
+                try {
+                    Intent fallbackIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                    fallbackIntent.setDataAndType(uri, "*/*");
+                    fallbackIntent.addCategory(Intent.CATEGORY_OPENABLE);
+                    startActivity(Intent.createChooser(fallbackIntent, "Open Media Folder"));
+                } catch (Exception e2) {
+                    Toast.makeText(getContext(), "Could not find a file manager to open this directory.", Toast.LENGTH_LONG).show();
+                }
             }
         }
     }

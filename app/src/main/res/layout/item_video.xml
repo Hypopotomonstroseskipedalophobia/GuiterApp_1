@@ -44,16 +44,6 @@
                     android:text="Lesson Name"
                     android:textColor="#FFFFFF"
                     android:textSize="14sp" />
-
-                <ImageView
-                    android:id="@+id/exercise_indicator"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_marginTop="2dp"
-                    android:src="@android:drawable/btn_star_big_on"
-                    app:tint="#FFD700"
-                    android:visibility="gone"
-                    tools:visibility="visible"/>
             </LinearLayout>
 
             <ImageButton

@@ -11,41 +11,6 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <ImageView
-            android:id="@+id/iv_profile_pic"
-            android:layout_width="74dp"
-            android:layout_height="67dp"
-            android:layout_marginTop="8dp"
-            android:src="@android:drawable/ic_menu_gallery"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#FFFFFF" />
-
-        <TextView
-            android:id="@+id/tv_username"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="Guitarist User"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@id/tv_user_email"
-            app:layout_constraintStart_toEndOf="@id/iv_profile_pic"
-            app:layout_constraintTop_toTopOf="@id/iv_profile_pic"
-            app:layout_constraintVertical_chainStyle="packed" />
-
-        <TextView
-            android:id="@+id/tv_user_email"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="guitarist@example.com"
-            android:textColor="#BBBBBB"
-            android:textSize="14sp"
-            app:layout_constraintBottom_toBottomOf="@id/iv_profile_pic"
-            app:layout_constraintStart_toStartOf="@id/tv_username"
-            app:layout_constraintTop_toBottomOf="@id/tv_username" />
-
         <ImageButton
             android:id="@+id/btn_profile_menu"
             android:layout_width="48dp"
@@ -60,21 +25,21 @@
             android:id="@+id/tv_stats_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
             android:text="Personal Stats"
             android:textColor="#FFFFFF"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/iv_profile_pic" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <HorizontalScrollView
             android:id="@+id/hsv_instrument_filter"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="24dp"
             android:scrollbars="none"
-            app:layout_constraintTop_toBottomOf="@id/tv_stats_label">
+            app:layout_constraintTop_toBottomOf="@+id/btn_profile_menu"
+            tools:layout_editor_absoluteX="16dp">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/cg_instrument_filter"
@@ -98,10 +63,10 @@
                     style="@style/Widget.MaterialComponents.Chip.Action"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:chipIcon="@android:drawable/ic_input_add"
-                    app:chipIconTint="#4CAF50"
                     android:textColor="#4CAF50"
-                    app:chipBackgroundColor="#1E1E1E" />
+                    app:chipBackgroundColor="#1E1E1E"
+                    app:chipIcon="@android:drawable/ic_input_add"
+                    app:chipIconTint="#4CAF50" />
 
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>

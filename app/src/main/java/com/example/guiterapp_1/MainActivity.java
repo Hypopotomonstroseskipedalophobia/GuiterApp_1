@@ -1,6 +1,5 @@
 package com.example.guiterapp_1;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -38,11 +37,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!isLoggedIn()) {
-            navigateToLogin();
-            return;
-        }
-
         EdgeToEdge.enable(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -57,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         setupAudioPlayer();
 
         if (!isSetupComplete()) {
-            showInstrumentSelection();
+            showGreeting();
         } else {
             showMainContent();
         }
@@ -68,10 +62,10 @@ public class MainActivity extends AppCompatActivity {
         return pref.getBoolean("setup_complete", false);
     }
 
-    private void showInstrumentSelection() {
+    private void showGreeting() {
         binding.bottomNavigation.setVisibility(View.GONE);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, new InstrumentSelectionFragment())
+                .replace(R.id.fragment_container, new GreetingFragment())
                 .commit();
     }
 
@@ -92,16 +86,6 @@ public class MainActivity extends AppCompatActivity {
         binding.bottomNavigation.setSelectedItemId(R.id.page_2);
         setupNavigation();
         updateUIForFragment();
-    }
-
-    private boolean isLoggedIn() {
-        SharedPreferences pref = getSharedPreferences("GuitarApp", MODE_PRIVATE);
-        return pref.getInt("current_user_id", -1) != -1;
-    }
-
-    private void navigateToLogin() {
-        startActivity(new Intent(this, LoginActivity.class));
-        finish();
     }
 
     private void setupNavigation() {
@@ -200,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void playAudio(String path, String title) {
-        stopAudio();
+        stopAudio() ;
         mediaPlayer = new MediaPlayer();
         try {
             if (path.startsWith("content://") || path.startsWith("http")) {

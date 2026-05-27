@@ -303,11 +303,8 @@ public class LearningFragment extends Fragment implements LearningService.Servic
     }
 
     private void startRecording() {
-        File directory = requireContext().getExternalFilesDir(null);
-        if (directory != null) {
-            String path = directory.getAbsolutePath() + "/audio_" + System.currentTimeMillis() + ".mp4";
-            learningService.startRecording(path);
-        }
+        String path = MediaUtils.getNewAudioPath(requireContext(), "audio");
+        learningService.startRecording(path);
     }
 
     @Override

@@ -99,8 +99,6 @@ public class LessonAdapter extends RecyclerView.Adapter<LessonAdapter.LessonView
                     (lesson.notes != null ? lesson.notes : "No notes"));
             binding.videoName.setText(info);
 
-            // Show star indicator if there's an exercise linked to this lesson
-            binding.exerciseIndicator.setVisibility(item.exercise != null ? View.VISIBLE : View.GONE);
 
             // Highlight if selected
             binding.getRoot().setCardElevation(isSelected ? 8f : 2f);
