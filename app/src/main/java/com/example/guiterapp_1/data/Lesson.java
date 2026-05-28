@@ -3,6 +3,7 @@ package com.example.guiterapp_1.data;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(
@@ -24,6 +25,7 @@ public class Lesson {
 
     @ColumnInfo(name = "lesson_date")
     public String lessonDate;
+    
     @ColumnInfo(name = "lesson_length")
     public long lessonLength;
 
@@ -48,6 +50,10 @@ public class Lesson {
     @ColumnInfo(name = "instrument_id")
     public Integer instrumentId;
 
+    public Lesson() {
+    }
+
+    @Ignore
     public Lesson(String userId, String lessonDate, long lessonLength, String startTime, int rating, String notes) {
         this.userId = userId;
         this.lessonDate = lessonDate;

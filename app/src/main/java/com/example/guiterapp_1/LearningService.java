@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -46,13 +47,12 @@ public class LearningService extends Service {
         @Override
         public void run() {
             if (isLearning) {
-                long elapsed = System.currentTimeMillis() - startTimeMillis;
+                long elapsed = SystemClock.elapsedRealtime() - startTimeMillis;
                 if (callbacks != null) {
                     callbacks.onTimerUpdate(elapsed);
                 }
-                // Schedule next update to be exactly on the next second boundary
-                long nextDelay = 1000 - (elapsed % 1000);
-                handler.postDelayed(this, nextDelay);
+                // Schedule next update to be roughly every second
+                handler.postDelayed(this, 1000);
             }
         }
     };
@@ -77,7 +77,6 @@ public class LearningService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // Mandatory startForeground call for Android 8+ when started via startForegroundService
         startForegroundServiceCompatible(isLearning ? "Learning session in progress..." : "Training ready");
         return START_STICKY;
     }
@@ -91,24 +90,19 @@ public class LearningService extends Service {
     public void setCallbacks(ServiceCallbacks callbacks) {
         this.callbacks = callbacks;
         if (isLearning && callbacks != null) {
-            callbacks.onTimerUpdate(System.currentTimeMillis() - startTimeMillis);
+            callbacks.onTimerUpdate(SystemClock.elapsedRealtime() - startTimeMillis);
         }
     }
 
     public void startLearning() {
         if (isLearning) return;
         isLearning = true;
-        startTimeMillis = System.currentTimeMillis();
+        startTimeMillis = SystemClock.elapsedRealtime();
         
         startForegroundServiceCompatible("Learning session in progress...");
-        
-        // Immediate update
-        if (callbacks != null) {
-            callbacks.onTimerUpdate(0);
-        }
-        
+
         handler.removeCallbacks(timerRunnable);
-        handler.postDelayed(timerRunnable, 1000);
+        handler.post(timerRunnable); // Start immediately
     }
 
     private void startForegroundServiceCompatible(String contentText) {
@@ -116,7 +110,6 @@ public class LearningService extends Service {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 boolean hasMicPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
-                // On Android 14+, microphone type requires permission.
                 if (Build.VERSION.SDK_INT >= 34 && !hasMicPermission) {
                     startForeground(NOTIFICATION_ID, notification);
                 } else {
@@ -153,8 +146,9 @@ public class LearningService extends Service {
         return isLearning;
     }
 
-    public long getStartTimeMillis() {
-        return startTimeMillis;
+    public long getElapsedMillis() {
+        if (!isLearning) return 0;
+        return SystemClock.elapsedRealtime() - startTimeMillis;
     }
 
     public void startRecording(String path) {

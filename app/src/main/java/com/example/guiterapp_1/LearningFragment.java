@@ -152,8 +152,6 @@ public class LearningFragment extends Fragment implements LearningService.Servic
                     exercise.target_bpm = 0;
                 }
                 
-                // Set the instrument on the exercise: 
-                // Priority: Manual exercise instrument > Session instrument
                 if (exerciseSelectedInstrumentId != null) {
                     exercise.instrument_id = exerciseSelectedInstrumentId;
                 } else if (selectedInstrumentId != null) {
@@ -250,7 +248,7 @@ public class LearningFragment extends Fragment implements LearningService.Servic
         Intent serviceIntent = new Intent(requireContext(), LearningService.class);
         ContextCompat.startForegroundService(requireContext(), serviceIntent);
         learningService.startLearning();
-        
+
         binding.startLearningButton.setText("Stop Training");
         binding.ratingGroup.setVisibility(View.GONE);
         binding.lastSessionCard.setVisibility(View.GONE);
@@ -259,7 +257,7 @@ public class LearningFragment extends Fragment implements LearningService.Servic
     }
 
     private void stopLearning() {
-        lastDurationSeconds = (System.currentTimeMillis() - learningService.getStartTimeMillis()) / 1000;
+        lastDurationSeconds = learningService.getElapsedMillis() / 1000;
         learningService.stopLearning();
         
         binding.startLearningButton.setText("Start Training");
@@ -295,27 +293,29 @@ public class LearningFragment extends Fragment implements LearningService.Servic
             }
         }
 
-        if (!allGranted) {
-            requestPermissionLauncher.launch(permissions);
-        } else {
+        if (allGranted) {
             startRecording();
+        } else {
+            requestPermissionLauncher.launch(permissions);
         }
     }
 
     private void startRecording() {
-        String path = MediaUtils.getNewAudioPath(requireContext(), "audio");
-        learningService.startRecording(path);
+        File recordingsDir = new File(requireContext().getExternalFilesDir(null), "recordings");
+        if (!recordingsDir.exists()) recordingsDir.mkdirs();
+        
+        String fileName = "recording_" + System.currentTimeMillis() + ".mp4";
+        File audioFile = new File(recordingsDir, fileName);
+        learningService.startRecording(audioFile.getAbsolutePath());
     }
 
     @Override
     public void onTimerUpdate(long millis) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
-                int seconds = (int) (millis / 1000);
-                int minutes = seconds / 60;
-                int hours = minutes / 60;
-                seconds = seconds % 60;
-                minutes = minutes % 60;
+                int seconds = (int) (millis / 1000) % 60;
+                int minutes = (int) ((millis / (1000 * 60)) % 60);
+                int hours = (int) ((millis / (1000 * 60 * 60)) % 24);
                 binding.timerText.setText(String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds));
             });
         }
@@ -326,21 +326,19 @@ public class LearningFragment extends Fragment implements LearningService.Servic
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
                 if (recording) {
+                    binding.recordAudioButton.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+                    binding.recordingStatusText.setText("Recording...");
                     binding.recordingIndicator.setVisibility(View.VISIBLE);
                     binding.pauseResumeButton.setVisibility(View.VISIBLE);
                     binding.cancelRecordingButton.setVisibility(View.VISIBLE);
-                    binding.recordAudioButton.setImageResource(android.R.drawable.ic_menu_save);
-                    binding.recordingStatusText.setText("● Recording");
-                    binding.recordingStatusText.setTextColor(0xFFFF5252);
                 } else {
+                    binding.recordAudioButton.setImageResource(android.R.drawable.ic_btn_speak_now);
+                    binding.recordingStatusText.setText("Recording Ready");
                     binding.recordingIndicator.setVisibility(View.GONE);
                     binding.pauseResumeButton.setVisibility(View.GONE);
                     binding.cancelRecordingButton.setVisibility(View.GONE);
-                    binding.recordAudioButton.setImageResource(android.R.drawable.ic_btn_speak_now);
-                    if (cancelled) {
-                        Toast.makeText(getContext(), "Recording cancelled and deleted", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "Audio recorded successfully", Toast.LENGTH_SHORT).show();
+                    if (!cancelled) {
+                        Toast.makeText(getContext(), "Recording saved", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -351,35 +349,10 @@ public class LearningFragment extends Fragment implements LearningService.Servic
     public void onRecordingPausedChanged(boolean paused) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
-                if (paused) {
-                    binding.pauseResumeButton.setImageResource(android.R.drawable.ic_media_play);
-                    binding.recordingStatusText.setText("II Paused");
-                    binding.recordingStatusText.setTextColor(0xFFFFC107);
-                } else {
-                    binding.pauseResumeButton.setImageResource(android.R.drawable.ic_media_pause);
-                    binding.recordingStatusText.setText("● Recording");
-                    binding.recordingStatusText.setTextColor(0xFFFF5252);
-                }
+                binding.pauseResumeButton.setImageResource(paused ? android.R.drawable.ic_media_play : android.R.drawable.ic_media_pause);
+                binding.recordingStatusText.setText(paused ? "Recording Paused" : "Recording...");
             });
         }
-    }
-
-    private void resetAfterSave() {
-        binding.ratingGroup.setVisibility(View.GONE);
-        binding.mainTrainingCard.setVisibility(View.VISIBLE);
-        binding.startLearningButton.setEnabled(true);
-        binding.notesEditText.setText("");
-        binding.ratingBar.setRating(0);
-        binding.exerciseForm.setVisibility(View.GONE);
-        binding.exerciseTitleEditText.setText("");
-        binding.exerciseTypeEditText.setText("");
-        binding.exerciseDescEditText.setText("");
-        binding.exerciseBpmEditText.setText("");
-        binding.exerciseCurrentBpmEditText.setText("");
-        binding.instrumentAutoComplete.setText("", false);
-        binding.exerciseInstrumentAutoComplete.setText("", false);
-        selectedInstrumentId = null;
-        exerciseSelectedInstrumentId = null;
     }
 
     private void saveLesson(long durationSeconds, int rating, String notes, String audioPath, Exercise exercise, Integer instrumentId) {
@@ -392,53 +365,54 @@ public class LearningFragment extends Fragment implements LearningService.Servic
             }
 
             Lesson lesson = new Lesson(
-                    "User_1",
-                    currentStartDateStr,
-                    durationSeconds,
-                    currentStartTimeStr,
-                    rating,
-                    notes
+                "user1",
+                currentStartDateStr,
+                durationSeconds,
+                currentStartTimeStr,
+                rating,
+                notes
             );
             lesson.audioPath = audioPath;
-            lesson.exerciseId = exerciseId;
             lesson.instrumentId = instrumentId;
+            lesson.exerciseId = exerciseId;
 
             db.lessonDao().insert(lesson);
-            loadLastSession();
+
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    Toast.makeText(getContext(), "Lesson saved!", Toast.LENGTH_SHORT).show();
+                    loadLastSession();
+                });
+            }
         });
+    }
+
+    private void resetAfterSave() {
+        binding.ratingGroup.setVisibility(View.GONE);
+        binding.exerciseForm.setVisibility(View.GONE);
+        binding.notesEditText.setText("");
+        binding.ratingBar.setRating(0);
+        binding.exerciseTitleEditText.setText("");
+        binding.exerciseTypeEditText.setText("");
+        binding.exerciseDescEditText.setText("");
+        binding.exerciseBpmEditText.setText("");
+        binding.exerciseCurrentBpmEditText.setText("");
+        binding.mainTrainingCard.setVisibility(View.VISIBLE);
+        lastDurationSeconds = 0;
+        exerciseSelectedInstrumentId = null;
+        binding.exerciseInstrumentAutoComplete.setText("");
     }
 
     private void loadLastSession() {
         Executors.newSingleThreadExecutor().execute(() -> {
             AppDatabase db = AppDatabase.getInstance(requireContext());
-            var lessons = db.lessonDao().getAllLessons();
-            if (!lessons.isEmpty()) {
-                Lesson last = lessons.get(0);
-                
-                String bpmInfo = "";
-                if (last.exerciseId != null) {
-                    Exercise ex = db.exerciseDao().getExerciseById(last.exerciseId);
-                    if (ex != null && ex.current_bpm > 0) {
-                        bpmInfo = String.format(Locale.getDefault(), " | BPM: %d", ex.current_bpm);
-                    }
-                }
-
-                String instrumentName = "";
-                if (last.instrumentId != null) {
-                    Instrument instr = db.instrumentDao().getInstrumentById(last.instrumentId);
-                    if (instr != null) {
-                        instrumentName = " | " + instr.name;
-                    }
-                }
-
-                String info = String.format(Locale.getDefault(), 
-                    "Last: %s | %d min | ⭐ %d%s%s\nNotes: %s", 
-                    last.lessonDate, (last.lessonLength / 60), last.rating, bpmInfo, instrumentName, last.notes);
-                
+            Lesson lastLesson = db.lessonDao().getLastLesson();
+            if (lastLesson != null) {
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
-                        binding.lastSessionText.setText(info);
                         binding.lastSessionCard.setVisibility(View.VISIBLE);
+                        String duration = String.format(Locale.getDefault(), "%d min", lastLesson.lessonLength / 60);
+                        binding.lastSessionText.setText(String.format(Locale.getDefault(), "Last session: %s (%s)", lastLesson.lessonDate, duration));
                     });
                 }
             }

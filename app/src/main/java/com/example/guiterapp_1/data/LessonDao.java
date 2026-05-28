@@ -45,4 +45,7 @@ public interface LessonDao {
 
     @Query("SELECT * FROM learning_sessions WHERE lesson_date >= :startDate AND (lesson_length >= 10 OR notes = 'Manual Entry') ORDER BY lesson_date ASC")
     List<Lesson> getLessonsAfterDate(String startDate);
+
+    @Query("SELECT * FROM learning_sessions ORDER BY id DESC LIMIT 1")
+    Lesson getLastLesson();
 }
