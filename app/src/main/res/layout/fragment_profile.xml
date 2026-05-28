@@ -1,331 +1,337 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swipe_refresh_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#121212">
+    android:layout_height="match_parent">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:layout_height="match_parent"
+        android:background="#121212">
 
-        <ImageButton
-            android:id="@+id/btn_profile_menu"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_sort_by_size"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#FFFFFF" />
-
-        <TextView
-            android:id="@+id/tv_stats_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Personal Stats"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <HorizontalScrollView
-            android:id="@+id/hsv_instrument_filter"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:scrollbars="none"
-            app:layout_constraintTop_toBottomOf="@+id/btn_profile_menu"
-            tools:layout_editor_absoluteX="16dp">
+            android:padding="16dp">
 
-            <com.google.android.material.chip.ChipGroup
-                android:id="@+id/cg_instrument_filter"
+            <ImageButton
+                android:id="@+id/btn_profile_menu"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@android:drawable/ic_menu_sort_by_size"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="#FFFFFF" />
+
+            <TextView
+                android:id="@+id/tv_stats_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="Personal Stats"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <HorizontalScrollView
+                android:id="@+id/hsv_instrument_filter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:scrollbars="none"
+                app:layout_constraintTop_toBottomOf="@+id/btn_profile_menu"
+                tools:layout_editor_absoluteX="16dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/cg_instrument_filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_instr_all"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="All Instruments"
+                        android:textColor="#FFFFFF"
+                        app:chipBackgroundColor="#1E1E1E" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chip_add_instrument"
+                        style="@style/Widget.MaterialComponents.Chip.Action"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#4CAF50"
+                        app:chipBackgroundColor="#1E1E1E"
+                        app:chipIcon="@android:drawable/ic_input_add"
+                        app:chipIconTint="#4CAF50" />
+
+                </com.google.android.material.chip.ChipGroup>
+            </HorizontalScrollView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cv_stats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardBackgroundColor="#1E1E1E"
+                app:cardCornerRadius="12dp"
+                app:layout_constraintTop_toBottomOf="@id/hsv_instrument_filter">
+
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:padding="16dp"
+                    android:rowCount="2">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Play Time"
+                            android:textColor="#BBBBBB"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tv_total_play_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0h 0m"
+                            android:textColor="#FFFFFF"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sessions"
+                            android:textColor="#BBBBBB"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tv_total_sessions"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0"
+                            android:textColor="#FFFFFF"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Avg. Session"
+                            android:textColor="#BBBBBB"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tv_avg_session_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0m"
+                            android:textColor="#FFFFFF"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Longest Session"
+                            android:textColor="#BBBBBB"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tv_longest_session"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0m"
+                            android:textColor="#FFFFFF"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                </GridLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/cg_stats_filter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cv_stats"
                 app:selectionRequired="true"
                 app:singleSelection="true">
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_instr_all"
+                    android:id="@+id/chip_all"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="All Instruments"
+                    android:text="All Time"
                     android:textColor="#FFFFFF"
                     app:chipBackgroundColor="#1E1E1E" />
 
                 <com.google.android.material.chip.Chip
-                    android:id="@+id/chip_add_instrument"
-                    style="@style/Widget.MaterialComponents.Chip.Action"
+                    android:id="@+id/chip_3_months"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="#4CAF50"
-                    app:chipBackgroundColor="#1E1E1E"
-                    app:chipIcon="@android:drawable/ic_input_add"
-                    app:chipIconTint="#4CAF50" />
+                    android:text="3 Months"
+                    android:textColor="#FFFFFF"
+                    app:chipBackgroundColor="#1E1E1E" />
 
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_1_month"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="1 Month"
+                    android:textColor="#FFFFFF"
+                    app:chipBackgroundColor="#1E1E1E" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_week"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Week"
+                    android:textColor="#FFFFFF"
+                    app:chipBackgroundColor="#1E1E1E" />
             </com.google.android.material.chip.ChipGroup>
-        </HorizontalScrollView>
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cv_stats"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            app:cardBackgroundColor="#1E1E1E"
-            app:cardCornerRadius="12dp"
-            app:layout_constraintTop_toBottomOf="@id/hsv_instrument_filter">
+            <TextView
+                android:id="@+id/tv_progress_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Practice Activity"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cg_stats_filter" />
 
-            <GridLayout
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/line_chart"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@id/tv_progress_label" />
+
+            <FrameLayout
+                android:id="@+id/progress_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:columnCount="2"
-                android:padding="16dp"
-                android:rowCount="2">
+                android:layout_marginTop="16dp"
+                android:minHeight="70dp"
+                app:layout_constraintTop_toBottomOf="@id/line_chart" />
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:orientation="vertical"
-                    android:padding="8dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Play Time"
-                        android:textColor="#BBBBBB"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/tv_total_play_time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0h 0m"
-                        android:textColor="#FFFFFF"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:orientation="vertical"
-                    android:padding="8dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Sessions"
-                        android:textColor="#BBBBBB"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/tv_total_sessions"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textColor="#FFFFFF"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:orientation="vertical"
-                    android:padding="8dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Avg. Session"
-                        android:textColor="#BBBBBB"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/tv_avg_session_time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0m"
-                        android:textColor="#FFFFFF"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:orientation="vertical"
-                    android:padding="8dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Longest Session"
-                        android:textColor="#BBBBBB"
-                        android:textSize="12sp" />
-
-                    <TextView
-                        android:id="@+id/tv_longest_session"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0m"
-                        android:textColor="#FFFFFF"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-            </GridLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/cg_stats_filter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cv_stats"
-            app:selectionRequired="true"
-            app:singleSelection="true">
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_all"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
+            <TextView
+                android:id="@+id/tv_reached_goals_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="All Time"
+                android:layout_marginTop="24dp"
+                android:text="Reached Goals"
                 android:textColor="#FFFFFF"
-                app:chipBackgroundColor="#1E1E1E" />
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/progress_container" />
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_3_months"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="3 Months"
-                android:textColor="#FFFFFF"
-                app:chipBackgroundColor="#1E1E1E" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_1_month"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="1 Month"
-                android:textColor="#FFFFFF"
-                app:chipBackgroundColor="#1E1E1E" />
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_week"
-                style="@style/Widget.MaterialComponents.Chip.Choice"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Week"
-                android:textColor="#FFFFFF"
-                app:chipBackgroundColor="#1E1E1E" />
-        </com.google.android.material.chip.ChipGroup>
-
-        <TextView
-            android:id="@+id/tv_progress_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Practice Activity"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cg_stats_filter" />
-
-        <com.github.mikephil.charting.charts.LineChart
-            android:id="@+id/line_chart"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/tv_progress_label" />
-
-        <FrameLayout
-            android:id="@+id/progress_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:minHeight="70dp"
-            app:layout_constraintTop_toBottomOf="@id/line_chart" />
-
-        <TextView
-            android:id="@+id/tv_reached_goals_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Reached Goals"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:visibility="gone"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/progress_container" />
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cv_reached_goals"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:visibility="gone"
-            app:cardBackgroundColor="#1E1E1E"
-            app:cardCornerRadius="12dp"
-            app:layout_constraintTop_toBottomOf="@id/tv_reached_goals_label">
-
-            <LinearLayout
-                android:id="@+id/ll_reached_goals_container"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cv_reached_goals"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="8dp" />
-        </com.google.android.material.card.MaterialCardView>
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="#1E1E1E"
+                app:cardCornerRadius="12dp"
+                app:layout_constraintTop_toBottomOf="@id/tv_reached_goals_label">
 
-        <TextView
-            android:id="@+id/tv_exercises_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Exercise Progress"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cv_reached_goals" />
+                <LinearLayout
+                    android:id="@+id/ll_reached_goals_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="8dp" />
+            </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_add_exercise"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Add"
-            android:textColor="#4CAF50"
-            app:icon="@android:drawable/ic_input_add"
-            app:iconTint="#4CAF50"
-            app:layout_constraintBottom_toBottomOf="@id/tv_exercises_label"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tv_exercises_label" />
+            <TextView
+                android:id="@+id/tv_exercises_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Exercise Progress"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cv_reached_goals" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_exercise_stats"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:nestedScrollingEnabled="false"
-            app:layout_constraintTop_toBottomOf="@id/tv_exercises_label"
-            tools:listitem="@layout/item_exercise_stats" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_add_exercise"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add"
+                android:textColor="#4CAF50"
+                app:icon="@android:drawable/ic_input_add"
+                app:iconTint="#4CAF50"
+                app:layout_constraintBottom_toBottomOf="@id/tv_exercises_label"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tv_exercises_label" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.core.widget.NestedScrollView>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_exercise_stats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:nestedScrollingEnabled="false"
+                app:layout_constraintTop_toBottomOf="@id/tv_exercises_label"
+                tools:listitem="@layout/item_exercise_stats" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

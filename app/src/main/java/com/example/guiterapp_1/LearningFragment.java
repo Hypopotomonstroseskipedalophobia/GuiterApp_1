@@ -67,12 +67,18 @@ public class LearningFragment extends Fragment implements LearningService.Servic
             learningService = binder.getService();
             learningService.setCallbacks(LearningFragment.this);
             isBound = true;
-            updateUIState();
+            if (binding != null) {
+                binding.startLearningButton.setEnabled(true);
+                updateUIState();
+            }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             isBound = false;
+            if (binding != null) {
+                binding.startLearningButton.setEnabled(false);
+            }
         }
     };
 
@@ -87,11 +93,14 @@ public class LearningFragment extends Fragment implements LearningService.Servic
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Disable start button until bound to avoid clicks that do nothing
+        binding.startLearningButton.setEnabled(false);
+        
         Intent intent = new Intent(requireContext(), LearningService.class);
         requireContext().bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
         binding.startLearningButton.setOnClickListener(v -> {
-            if (isBound) {
+            if (isBound && learningService != null) {
                 if (learningService.isLearning()) {
                     stopLearning();
                 } else {
@@ -101,7 +110,7 @@ public class LearningFragment extends Fragment implements LearningService.Servic
         });
 
         binding.recordAudioButton.setOnClickListener(v -> {
-            if (isBound) {
+            if (isBound && learningService != null) {
                 if (learningService.isRecording()) {
                     learningService.stopRecording(false);
                 } else {
@@ -111,7 +120,7 @@ public class LearningFragment extends Fragment implements LearningService.Servic
         });
 
         binding.pauseResumeButton.setOnClickListener(v -> {
-            if (isBound && learningService.isRecording()) {
+            if (isBound && learningService != null && learningService.isRecording()) {
                 if (learningService.isPaused()) {
                     learningService.resumeRecording();
                 } else {
@@ -121,7 +130,7 @@ public class LearningFragment extends Fragment implements LearningService.Servic
         });
 
         binding.cancelRecordingButton.setOnClickListener(v -> {
-            if (isBound && learningService.isRecording()) {
+            if (isBound && learningService != null && learningService.isRecording()) {
                 learningService.stopRecording(true);
             }
         });
@@ -174,6 +183,7 @@ public class LearningFragment extends Fragment implements LearningService.Servic
 
     private void loadInstruments() {
         Executors.newSingleThreadExecutor().execute(() -> {
+            if (getContext() == null) return;
             AppDatabase db = AppDatabase.getInstance(requireContext());
             instruments = db.instrumentDao().getAllInstruments();
             
@@ -186,6 +196,7 @@ public class LearningFragment extends Fragment implements LearningService.Servic
 
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
+                    if (binding == null) return;
                     List<String> names = new ArrayList<>();
                     for (Instrument i : instruments) {
                         names.add(i.name);
@@ -221,6 +232,8 @@ public class LearningFragment extends Fragment implements LearningService.Servic
     }
 
     private void updateUIState() {
+        if (binding == null || learningService == null) return;
+        
         if (learningService.isLearning()) {
             binding.startLearningButton.setText("Stop Training");
             binding.recordingControlsCard.setVisibility(View.VISIBLE);
@@ -257,6 +270,7 @@ public class LearningFragment extends Fragment implements LearningService.Servic
     }
 
     private void stopLearning() {
+        if (learningService == null) return;
         lastDurationSeconds = learningService.getElapsedMillis() / 1000;
         learningService.stopLearning();
         
@@ -301,6 +315,7 @@ public class LearningFragment extends Fragment implements LearningService.Servic
     }
 
     private void startRecording() {
+        if (learningService == null) return;
         File recordingsDir = new File(requireContext().getExternalFilesDir(null), "recordings");
         if (!recordingsDir.exists()) recordingsDir.mkdirs();
         
@@ -313,10 +328,12 @@ public class LearningFragment extends Fragment implements LearningService.Servic
     public void onTimerUpdate(long millis) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
-                int seconds = (int) (millis / 1000) % 60;
-                int minutes = (int) ((millis / (1000 * 60)) % 60);
-                int hours = (int) ((millis / (1000 * 60 * 60)) % 24);
-                binding.timerText.setText(String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds));
+                if (binding != null) {
+                    int seconds = (int) (millis / 1000) % 60;
+                    int minutes = (int) ((millis / (1000 * 60)) % 60);
+                    int hours = (int) ((millis / (1000 * 60 * 60)) % 24);
+                    binding.timerText.setText(String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds));
+                }
             });
         }
     }
@@ -325,20 +342,22 @@ public class LearningFragment extends Fragment implements LearningService.Servic
     public void onRecordingStatusChanged(boolean recording, boolean cancelled) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
-                if (recording) {
-                    binding.recordAudioButton.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
-                    binding.recordingStatusText.setText("Recording...");
-                    binding.recordingIndicator.setVisibility(View.VISIBLE);
-                    binding.pauseResumeButton.setVisibility(View.VISIBLE);
-                    binding.cancelRecordingButton.setVisibility(View.VISIBLE);
-                } else {
-                    binding.recordAudioButton.setImageResource(android.R.drawable.ic_btn_speak_now);
-                    binding.recordingStatusText.setText("Recording Ready");
-                    binding.recordingIndicator.setVisibility(View.GONE);
-                    binding.pauseResumeButton.setVisibility(View.GONE);
-                    binding.cancelRecordingButton.setVisibility(View.GONE);
-                    if (!cancelled) {
-                        Toast.makeText(getContext(), "Recording saved", Toast.LENGTH_SHORT).show();
+                if (binding != null) {
+                    if (recording) {
+                        binding.recordAudioButton.setImageResource(android.R.drawable.ic_menu_save);
+                        binding.recordingStatusText.setText("Recording...");
+                        binding.recordingIndicator.setVisibility(View.VISIBLE);
+                        binding.pauseResumeButton.setVisibility(View.VISIBLE);
+                        binding.cancelRecordingButton.setVisibility(View.VISIBLE);
+                    } else {
+                        binding.recordAudioButton.setImageResource(android.R.drawable.ic_btn_speak_now);
+                        binding.recordingStatusText.setText("Recording Ready");
+                        binding.recordingIndicator.setVisibility(View.GONE);
+                        binding.pauseResumeButton.setVisibility(View.GONE);
+                        binding.cancelRecordingButton.setVisibility(View.GONE);
+                        if (!cancelled) {
+                            Toast.makeText(getContext(), "Recording saved", Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
             });
@@ -349,14 +368,17 @@ public class LearningFragment extends Fragment implements LearningService.Servic
     public void onRecordingPausedChanged(boolean paused) {
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
-                binding.pauseResumeButton.setImageResource(paused ? android.R.drawable.ic_media_play : android.R.drawable.ic_media_pause);
-                binding.recordingStatusText.setText(paused ? "Recording Paused" : "Recording...");
+                if (binding != null) {
+                    binding.pauseResumeButton.setImageResource(paused ? android.R.drawable.ic_media_play : android.R.drawable.ic_media_pause);
+                    binding.recordingStatusText.setText(paused ? "Recording Paused" : "Recording...");
+                }
             });
         }
     }
 
     private void saveLesson(long durationSeconds, int rating, String notes, String audioPath, Exercise exercise, Integer instrumentId) {
         Executors.newSingleThreadExecutor().execute(() -> {
+            if (getContext() == null) return;
             AppDatabase db = AppDatabase.getInstance(requireContext());
             
             Integer exerciseId = null;
@@ -380,14 +402,17 @@ public class LearningFragment extends Fragment implements LearningService.Servic
 
             if (getActivity() != null) {
                 getActivity().runOnUiThread(() -> {
-                    Toast.makeText(getContext(), "Lesson saved!", Toast.LENGTH_SHORT).show();
-                    loadLastSession();
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "Lesson saved!", Toast.LENGTH_SHORT).show();
+                        loadLastSession();
+                    }
                 });
             }
         });
     }
 
     private void resetAfterSave() {
+        if (binding == null) return;
         binding.ratingGroup.setVisibility(View.GONE);
         binding.exerciseForm.setVisibility(View.GONE);
         binding.notesEditText.setText("");
@@ -405,14 +430,17 @@ public class LearningFragment extends Fragment implements LearningService.Servic
 
     private void loadLastSession() {
         Executors.newSingleThreadExecutor().execute(() -> {
+            if (getContext() == null) return;
             AppDatabase db = AppDatabase.getInstance(requireContext());
             Lesson lastLesson = db.lessonDao().getLastLesson();
             if (lastLesson != null) {
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(() -> {
-                        binding.lastSessionCard.setVisibility(View.VISIBLE);
-                        String duration = String.format(Locale.getDefault(), "%d min", lastLesson.lessonLength / 60);
-                        binding.lastSessionText.setText(String.format(Locale.getDefault(), "Last session: %s (%s)", lastLesson.lessonDate, duration));
+                        if (binding != null) {
+                            binding.lastSessionCard.setVisibility(View.VISIBLE);
+                            String duration = String.format(Locale.getDefault(), "%d min", lastLesson.lessonLength / 60);
+                            binding.lastSessionText.setText(String.format(Locale.getDefault(), "Last session: %s (%s)", lastLesson.lessonDate, duration));
+                        }
                     });
                 }
             }
@@ -422,7 +450,8 @@ public class LearningFragment extends Fragment implements LearningService.Servic
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (isBound) {
+        if (isBound && learningService != null) {
+            learningService.setCallbacks(null); // Stop receiving callbacks to avoid NPEs
             requireContext().unbindService(connection);
             isBound = false;
         }

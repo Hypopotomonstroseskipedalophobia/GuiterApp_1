@@ -213,7 +213,10 @@
                         android:layout_gravity="center_horizontal"
                         android:layout_marginTop="16dp"
                         android:numStars="5"
-                        android:stepSize="1" />
+                        android:stepSize="1"
+                        android:progressTint="#FFD700"
+                        android:secondaryProgressTint="#FFD700"
+                        android:progressBackgroundTint="#888888" />
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/instrument_input_layout"

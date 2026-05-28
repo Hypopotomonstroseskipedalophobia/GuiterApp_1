@@ -73,6 +73,9 @@ public class ProfileFragment extends Fragment {
 
         //loadUserProfile();
 
+        binding.swipeRefreshLayout.setColorSchemeColors(Color.parseColor("#4CAF50"));
+        binding.swipeRefreshLayout.setOnRefreshListener(this::refreshData);
+
         binding.btnProfileMenu.setOnClickListener(this::showPopupMenu);
 
         exerciseAdapter = new ExerciseStatsAdapter();
@@ -132,6 +135,13 @@ public class ProfileFragment extends Fragment {
         getChildFragmentManager().beginTransaction()
                 .replace(R.id.progress_container, progressFragment, "PROGRESS_FRAGMENT")
                 .commit();
+    }
+
+    private void refreshData() {
+        loadInstruments();
+        loadStats();
+        // Hide refresh indicator after a short delay or once both loads are likely finished
+        // For simplicity, we'll hide it in loadStats' UI thread update.
     }
 
     private void updateChildProgressFilter() {
@@ -409,6 +419,7 @@ public class ProfileFragment extends Fragment {
                         binding.lineChart.clear();
                         binding.lineChart.setNoDataText("Practice more to see your activity!");
                         binding.lineChart.invalidate();
+                        binding.swipeRefreshLayout.setRefreshing(false);
                     }
                 });
             }
@@ -473,6 +484,7 @@ public class ProfileFragment extends Fragment {
                     binding.lineChart.getAxisLeft().setAxisMinimum(0f);
                     binding.lineChart.animateY(800);
                     binding.lineChart.invalidate();
+                    binding.swipeRefreshLayout.setRefreshing(false);
                 }
             });
         }
